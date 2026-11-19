@@ -75,6 +75,14 @@ Last rebased: 2026-11-11 (DPU colour LUTs).
   driver exists per SoC and only the sm8550 copy is proven). Trap: the DSI controller is still
   wedged while the panel's disable runs, so its DCS writes fail by design; unprepare drops the
   rails and resets the panel, and prepare re-sends the init sequence. Source: ours.
+- **1130** A plane that is already running keeps its SSPP. The DPU gave a plane the lowest free
+  pipe matching its requirements and ignored the pipe it was using, so with both CRTCs lit the
+  upper panel's cursor moved from SSPP 12 to SSPP 11 in the commit that freed 11 on the lower
+  CRTC. That commit re-binds the plane and leaves the pipe it came from programmed; the frame then
+  never completes, the encoder reports kickoff timeout, and the panel shows static until a
+  modeset. Applies: every DPU; only a command-mode output was seen to lose the frame. Trap: a plane
+  whose current pipe no longer fits (scaling, YUV, rotation) is still moved, and a move is still
+  unsafe. Source: ours.
 
 ### Haptics
 
